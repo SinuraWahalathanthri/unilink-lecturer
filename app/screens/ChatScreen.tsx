@@ -51,14 +51,22 @@ type Message = {
 const CLOUDINARY_URL_BASE = "https://api.cloudinary.com/v1_1/dudwypfcf";
 const IMAGE_UPLOAD_PRESET = "unilink";
 const PDF_UPLOAD_PRESET = "unilink-docs";
+
 export default function ChatScreen() {
   const navigation = useNavigation();
-  const { lecturer, studentEmail } = useLocalSearchParams();
+  const {
+    lecturer,
+    studentEmail,
+    adminEmail,
+    adminId,
+    chatType = "student",
+  } = useLocalSearchParams();
 
   const lecturerDetails = lecturer ? JSON.parse(lecturer) : null;
   const lecturerId = lecturerDetails?.lecturer_id;
   const [lecturerDocId, setLecturerDocId] = useState<string | null>(null);
-  const [studentId, setStudentId] = useState<string | null>(null);
+  const [otherUserId, setOtherUserId] = useState<string | null>(null);
+  const isAdminChat = chatType === "admin";
 
   const lecturerData = {
     id: lecturerDetails?.lecturer_id,
@@ -78,58 +86,75 @@ export default function ChatScreen() {
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [isImagePreviewVisible, setIsImagePreviewVisible] = useState(false);
 
-  const [studentData, setStudentData] = useState<{
+  const [otherUserData, setOtherUserData] = useState<{
     name?: string;
     degree?: string;
     email?: string;
     profileImage?: string;
+    institutional_id?: string;
+    role?: string;
   } | null>(null);
 
   console.log("lecturerDocId:", lecturerDocId);
-  console.log("studentId:", studentId);
+  console.log("otherUserId:", otherUserId);
+  console.log("chatType:", chatType);
 
+  // Fetch the other user's ID based on chat type
   useEffect(() => {
-    const fetchStudentId = async () => {
+    const fetchOtherUserId = async () => {
       try {
-        if (!studentEmail) return;
-        const q = query(
-          collection(db, "students"),
-          where("email", "==", studentEmail)
-        );
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          setStudentId(snapshot.docs[0].id);
-        } else {
-          console.warn("Student not found in Firestore");
+        if (isAdminChat && adminId) {
+          // Admin chat - use the provided adminId
+          setOtherUserId(adminId);
+        } else if (!isAdminChat && studentEmail) {
+          // Student chat - fetch student ID by email
+          const q = query(
+            collection(db, "students"),
+            where("email", "==", studentEmail)
+          );
+          const snapshot = await getDocs(q);
+          if (!snapshot.empty) {
+            setOtherUserId(snapshot.docs[0].id);
+          } else {
+            console.warn("Student not found in Firestore");
+          }
         }
       } catch (err) {
-        console.error("Error fetching student doc ID:", err);
+        console.error("Error fetching other user doc ID:", err);
       }
     };
 
-    fetchStudentId();
-  }, [studentEmail]);
+    fetchOtherUserId();
+  }, [studentEmail, adminEmail, adminId, isAdminChat]);
 
+  // Fetch other user's details
   useEffect(() => {
-    const fetchStudentDetails = async () => {
-      if (!studentId) return;
+    const fetchOtherUserDetails = async () => {
+      if (!otherUserId) return;
 
       try {
-        const docRef = doc(db, "students", studentId);
+        const collectionName = isAdminChat ? "admins" : "students";
+
+        const docRef = doc(db, collectionName, otherUserId);
         const docSnap = await getDoc(docRef);
+
         if (docSnap.exists()) {
-          setStudentData(docSnap.data());
+          setOtherUserData(docSnap.data());
         } else {
-          console.warn("Student doc not found");
+          console.warn(`${isAdminChat ? "Admin" : "Student"} doc not found`);
         }
       } catch (error) {
-        console.error("Error fetching student details:", error);
+        console.error(
+          `Error fetching ${isAdminChat ? "admin" : "student"} details:`,
+          error
+        );
       }
     };
 
-    fetchStudentDetails();
-  }, [studentId]);
+    fetchOtherUserDetails();
+  }, [otherUserId, isAdminChat]);
 
+  // Fetch lecturer document ID
   useEffect(() => {
     const fetchLecturerDocId = async () => {
       try {
@@ -151,19 +176,20 @@ export default function ChatScreen() {
     fetchLecturerDocId();
   }, []);
 
+  // Listen to messages
   useEffect(() => {
-    if (!lecturerDocId || !studentId) return;
+    if (!lecturerDocId || !otherUserId) return;
 
     const q1 = query(
       collection(db, "messages"),
       where("sender_id", "==", lecturerDocId),
-      where("receiver_id", "==", studentId),
+      where("receiver_id", "==", otherUserId),
       orderBy("createdAt", "asc")
     );
 
     const q2 = query(
       collection(db, "messages"),
-      where("sender_id", "==", studentId),
+      where("sender_id", "==", otherUserId),
       where("receiver_id", "==", lecturerDocId),
       orderBy("createdAt", "asc")
     );
@@ -208,19 +234,19 @@ export default function ChatScreen() {
       unsubscribe1();
       unsubscribe2();
     };
-  }, [lecturerDocId, studentId]);
+  }, [lecturerDocId, otherUserId]);
 
   const handleSendMessage = async () => {
     if (!messageText.trim() && !imageUrl) return;
 
-    if (!lecturerDocId || !studentId) {
+    if (!lecturerDocId || !otherUserId) {
       Alert.alert("Error", "Sender/receiver info missing");
       return;
     }
 
     const newMessage = {
       sender_id: lecturerDocId,
-      receiver_id: studentId,
+      receiver_id: otherUserId,
       messageType:
         imageUrl && messageText ? "image_text" : imageUrl ? "image" : "text",
       text: messageText || null,
@@ -281,6 +307,7 @@ export default function ChatScreen() {
       setLoading(false);
     }
   };
+
   const uploadFileToCloudinary = async (file, isImage = true) => {
     const formData = new FormData();
 
@@ -317,20 +344,21 @@ export default function ChatScreen() {
     }
   };
 
+  // Mark messages as read
   useEffect(() => {
     const markMessagesAsRead = async () => {
-      if (!lecturerDocId || !studentId) return;
+      if (!lecturerDocId || !otherUserId) return;
 
       try {
         const unreadQuery = query(
           collection(db, "messages"),
-          where("sender_id", "==", studentId),
+          where("sender_id", "==", otherUserId),
           where("receiver_id", "==", lecturerDocId),
           where("isRead", "==", false)
         );
 
         const snapshot = await getDocs(unreadQuery);
-        const batch = writeBatch(db); // ✅ FIXED
+        const batch = writeBatch(db);
 
         snapshot.forEach((docSnap) => {
           const docRef = doc(db, "messages", docSnap.id);
@@ -347,45 +375,69 @@ export default function ChatScreen() {
     };
 
     markMessagesAsRead();
-  }, [lecturerDocId, studentId, messages]);
+  }, [lecturerDocId, otherUserId, messages]);
 
   const handleImagePress = (url: string) => {
     setPreviewImageUrl(url);
     setIsImagePreviewVisible(true);
   };
 
+  // Update header based on chat type
   useLayoutEffect(() => {
-    if (!studentData) return;
+    if (!otherUserData) return;
+
+    const getHeaderTitle = () => {
+      if (isAdminChat) {
+        return (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={styles.adminAvatar}>
+              <Ionicons name="person" size={24} color="#3D83F5" />
+            </View>
+            <View style={{ marginLeft: 10 }}>
+              <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                {otherUserData.name || "Admin"}
+              </Text>
+            </View>
+          </View>
+        );
+      } else {
+        return (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Image
+              source={
+                otherUserData.profileImage
+                  ? { uri: otherUserData.profileImage }
+                  : require("../../assets/images/profileImage.png")
+              }
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                marginRight: 10,
+              }}
+            />
+            <View>
+              <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                {otherUserData.name || "Student"}
+              </Text>
+              <Text style={{ fontSize: 12, color: "#666" }}>
+                {otherUserData.degree || otherUserData.email || ""}
+              </Text>
+            </View>
+          </View>
+        );
+      }
+    };
 
     navigation.setOptions({
       headerShown: true,
-      headerTitle: () => (
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image
-            source={
-              studentData.profileImage
-                ? { uri: studentData.profileImage }
-                : require("../../assets/images/profileImage.png")
-            }
-            style={{ width: 40, height: 40, borderRadius: 20, marginRight: 10 }}
-          />
-          <View>
-            <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-              {studentData.name || "Student"}
-            </Text>
-            <Text style={{ fontSize: 12, color: "#666" }}>
-              {studentData.degree || studentData.email || ""}
-            </Text>
-          </View>
-        </View>
-      ),
+      headerTitle: () => getHeaderTitle(),
       headerRight: () => (
         <TouchableOpacity
           onPress={() => {
-            // You can add student profile navigation here if you want
             Alert.alert(
-              "Student Profile",
-              `${studentData.name}'s profile clicked.`
+              `${isAdminChat ? "Admin" : "Student"} Profile`,
+              `${otherUserData.name}'s profile clicked.`
             );
           }}
           style={{ marginRight: 15 }}
@@ -394,7 +446,7 @@ export default function ChatScreen() {
         </TouchableOpacity>
       ),
     });
-  }, [navigation, studentData]);
+  }, [navigation, otherUserData, isAdminChat]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -415,7 +467,7 @@ export default function ChatScreen() {
           snapToEnd
         >
           {messages.map((msg) => {
-            const isMentor = msg.sender_id === lecturerDocId;
+            const isLecturer = msg.sender_id === lecturerDocId;
 
             const formattedTime = msg.createdAt?.toDate
               ? msg.createdAt.toDate().toLocaleTimeString([], {
@@ -428,8 +480,8 @@ export default function ChatScreen() {
               <TouchableOpacity
                 key={msg.id}
                 style={[
-                  styles.messageContainer,
-                  { alignItems: isMentor ? "flex-end" : "flex-start" },
+                  styles.messageWrapper,
+                  { alignItems: isLecturer ? "flex-end" : "flex-start" },
                 ]}
                 onLongPress={() => handleLongPress(msg)}
               >
@@ -443,7 +495,7 @@ export default function ChatScreen() {
                     />
                     <View style={styles.metaContainer}>
                       <Text style={styles.timeText}>{formattedTime}</Text>
-                      {isMentor && (
+                      {isLecturer && (
                         <Ionicons
                           name="checkmark-done"
                           size={14}
@@ -458,13 +510,15 @@ export default function ChatScreen() {
                   <View
                     style={[
                       styles.messageContainer,
-                      isMentor ? styles.mentorMessage : styles.studentMessage,
+                      isLecturer
+                        ? styles.lecturerMessage
+                        : styles.otherUserMessage,
                     ]}
                   >
                     <Text style={styles.messageText}>{msg.text}</Text>
                     <View style={styles.metaContainer}>
                       <Text style={styles.timeText}>{formattedTime}</Text>
-                      {isMentor && (
+                      {isLecturer && (
                         <Ionicons
                           name="checkmark-done"
                           size={14}
@@ -505,18 +559,10 @@ export default function ChatScreen() {
             <TouchableOpacity onPress={handleImageUpload}>
               <Entypo name="plus" size={20} color="#777" />
             </TouchableOpacity>
-            {/* <TouchableOpacity>
-              <Entypo
-                name="emoji-happy"
-                size={20}
-                color="#777"
-                style={{ marginLeft: 10 }}
-              />
-            </TouchableOpacity> */}
             <View style={styles.textinputContainer}>
               <TextInput
                 style={styles.textInput}
-                placeholder="Type a message..."
+                placeholder={`Message ${isAdminChat ? "admin" : "student"}...`}
                 placeholderTextColor="#999"
                 value={messageText}
                 onChangeText={setMessageText}
@@ -537,6 +583,7 @@ export default function ChatScreen() {
         </View>
       </KeyboardAvoidingView>
 
+      {/* Image Preview Modal */}
       <Modal visible={isImagePreviewVisible} transparent={true}>
         <View
           style={{
@@ -563,6 +610,7 @@ export default function ChatScreen() {
         </View>
       </Modal>
 
+      {/* Delete Message Modal */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -610,87 +658,55 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    justifyContent: "space-between",
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderColor: "#F3F3F3",
-    paddingTop: Platform.OS === "android" ? 74 : 20,
-  },
-  profileInfo: {
-    flex: 1,
-    marginLeft: 10,
-  },
-  headerText: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#333",
-    fontFamily: "LatoBold",
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 4,
-  },
-  badge: {
-    backgroundColor: "#1E88E5",
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-    marginRight: 8,
-    marginLeft: 10,
-  },
-  badgeText: {
-    color: "white",
-    fontSize: 11,
-    fontWeight: "500",
-  },
-  metaText: {
-    fontSize: 12,
-    color: "#666",
-  },
-  profileImage: {
+
+  // Admin avatar style
+  adminAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginHorizontal: 10,
+    backgroundColor: "#f0f0f0",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#3D83F5",
   },
-  icon: {
-    marginHorizontal: 4,
-  },
-  dateText: {
-    fontSize: 12,
-    color: "#777",
-    marginBottom: 8,
-  },
-  messageContainer: {
+
+  messageWrapper: {
     marginVertical: 6,
-    borderRadius: 8,
     maxWidth: "100%",
   },
+
+  messageContainer: {
+    borderRadius: 8,
+    maxWidth: "80%",
+  },
+
   messageText: {
     padding: 16,
     borderRadius: 8,
     overflow: "hidden",
     fontSize: 14,
   },
-  mentorMessage: {
+
+  lecturerMessage: {
     backgroundColor: "#e0dbd6",
     color: "#222",
+    alignSelf: "flex-end",
   },
-  studentMessage: {
+
+  otherUserMessage: {
     backgroundColor: "#d2e0fb",
     color: "#222",
+    alignSelf: "flex-start",
   },
+
   imageMessage: {
     width: 150,
     height: 150,
     borderRadius: 10,
     marginBottom: 6,
   },
+
   footerContainer: {
     paddingVertical: 16,
     paddingHorizontal: 16,
@@ -698,10 +714,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: "#d9d4cf",
   },
+
   footer: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   textinputContainer: {
     flex: 1,
     flexDirection: "row",
@@ -712,6 +730,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 40,
   },
+
   textInput: {
     flex: 1,
     fontSize: 14,
@@ -721,6 +740,7 @@ const styles = StyleSheet.create({
   imagePreviewContainer: {
     padding: 16,
   },
+
   imagePreview: {
     width: 100,
     height: 100,
@@ -739,47 +759,43 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     backgroundColor: "#fafafa",
   },
-  cancelText: {
-    color: "white",
-    fontWeight: "bold",
-  },
 
-  ////Delete Modal Styles
+  // Delete Modal Styles
   deleteModalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
+
   deleteModal: {
     backgroundColor: "white",
     padding: 20,
     borderRadius: 10,
     alignItems: "center",
   },
-  deleteText: { fontSize: 16, marginBottom: 20, fontFamily: "Lato" },
+
+  deleteText: {
+    fontSize: 16,
+    marginBottom: 20,
+    fontFamily: "Lato",
+  },
+
   modalButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
     gap: 50,
   },
-  cancelText2: { color: "gray", fontSize: 16, fontFamily: "Lato" },
-  deleteButton: { color: "red", fontSize: 16, fontFamily: "Lato" },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "rgb(0, 0, 0)",
-    justifyContent: "center",
-    alignItems: "center",
+
+  cancelText2: {
+    color: "gray",
+    fontSize: 16,
+    fontFamily: "Lato",
   },
-  closeButton: {
-    position: "absolute",
-    top: 40,
-    right: 20,
-    zIndex: 10,
-  },
-  fullImage: {
-    width: "90%",
-    height: "80%",
-    resizeMode: "contain",
+
+  deleteButton: {
+    color: "red",
+    fontSize: 16,
+    fontFamily: "Lato",
   },
 });

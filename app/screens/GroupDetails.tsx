@@ -456,10 +456,23 @@ export default function GroupDetails() {
           <View style={styles.inputWrapper}>
             <TouchableOpacity
               style={styles.attachButton}
-              onPress={showAttachmentOptions}
+              onPress={() => {
+                if (groupInfo?.file_sharing) {
+                  showAttachmentOptions();
+                } else {
+                  Alert.alert(
+                    "Permission Denied",
+                    "Admin hasn't given access to share files."
+                  );
+                }
+              }}
               disabled={uploading}
             >
-              <MaterialIcons name="attach-file" size={20} color="#666" />
+              <MaterialIcons
+                name="attach-file"
+                size={20}
+                color={groupInfo?.file_sharing ? "#666" : "#ccc"}
+              />
             </TouchableOpacity>
 
             <TextInput
