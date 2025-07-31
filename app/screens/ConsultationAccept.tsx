@@ -13,7 +13,13 @@ import React, { useState } from "react";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  updateDoc,
+  serverTimestamp,
+  addDoc,
+  collection,
+} from "firebase/firestore";
 import { db } from "@/services/FirebaseConfig";
 
 const ConsultationAccept = () => {
@@ -21,7 +27,7 @@ const ConsultationAccept = () => {
   const router = useRouter();
   const consultationData = consultation ? JSON.parse(consultation) : null;
 
-  const [meetingType, setMeetingType] = useState(consultationData?.mode || ""); // Use existing mode or empty
+  const [meetingType, setMeetingType] = useState(consultationData?.mode || "");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [location, setLocation] = useState("");
@@ -71,6 +77,44 @@ const ConsultationAccept = () => {
     return dates.join(", ");
   };
 
+  // Function to create notification for student
+  const createNotificationForStudent = async (
+    consultationId,
+    studentId,
+    lecturerName,
+    scheduledDateTime
+  ) => {
+    try {
+      const formattedDateTime = scheduledDateTime.toLocaleString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const notificationData = {
+        is_read: false,
+        student_id: studentId, // The receiver (student)
+        lecturer_id: consultationData.lecturer_id, // The sender (lecturer)
+        message_description: "Your consultation request has been accepted",
+        message_text: `Your consultation request has been accepted by ${lecturerName}. Scheduled for ${formattedDateTime}`,
+        receiver_type: "student",
+        related_id: consultationId,
+        related_type: "consultations",
+        timestamp: serverTimestamp(),
+        user_id: studentId, // For easier querying by student
+      };
+
+      await addDoc(collection(db, "notifications"), notificationData);
+      console.log("Notification sent to student successfully");
+    } catch (error) {
+      console.error("Error creating notification:", error);
+      // Don't throw error here to avoid disrupting the main flow
+    }
+  };
+
   const handleAcceptConsultation = async () => {
     if (!meetingType) {
       Alert.alert("Error", "Please select a meeting type");
@@ -94,8 +138,8 @@ const ConsultationAccept = () => {
 
       const updateData = {
         status: "accepted",
-        mode: meetingType, // Update the mode field
-        scheduledDateTime: scheduledDateTime, // Add scheduled date/time as a single field
+        mode: meetingType,
+        scheduledDateTime: scheduledDateTime,
         lecturerNotes: notes,
         acceptedAt: serverTimestamp(),
       };
@@ -104,7 +148,19 @@ const ConsultationAccept = () => {
         updateData.location = location;
       }
 
+      // Update the consultation
       await updateDoc(consultationRef, updateData);
+
+      // Create notification for the student
+      // You might need to get the lecturer's name from your lecturer data
+      const lecturerName =
+        consultationData.lecturerDetails?.name || "Your Lecturer";
+      await createNotificationForStudent(
+        consultationData.id,
+        consultationData.student_id,
+        lecturerName,
+        scheduledDateTime
+      );
 
       Alert.alert("Success", "Consultation accepted successfully!", [
         { text: "OK", onPress: () => router.back() },
