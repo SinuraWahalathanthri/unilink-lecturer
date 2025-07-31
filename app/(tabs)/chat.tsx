@@ -373,7 +373,7 @@ const ChatCard = ({ item, onPress, type }) => (
           </View>
         ) : (
           <Image
-            source={require("../../assets/images/hackthonImage.png")}
+            source={require("../../assets/images/image.png")}
             style={styles.profileImage}
           />
         )}

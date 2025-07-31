@@ -407,7 +407,7 @@ export default function ChatScreen() {
               source={
                 otherUserData.profileImage
                   ? { uri: otherUserData.profileImage }
-                  : require("../../assets/images/profileImage.png")
+                  : require("../../assets/images/image.png")
               }
               style={{
                 width: 40,
@@ -428,7 +428,6 @@ export default function ChatScreen() {
         );
       }
     };
-
     navigation.setOptions({
       headerShown: true,
       headerTitle: () => getHeaderTitle(),
@@ -453,6 +452,9 @@ export default function ChatScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
+          headerTitle: "",
+          headerTitleAlign: "left",
+          headerBackTitle: " ",
         }}
       />
 

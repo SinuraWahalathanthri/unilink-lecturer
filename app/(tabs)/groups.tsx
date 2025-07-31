@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import {
   Feather,
+  FontAwesome,
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
@@ -33,10 +34,9 @@ import CommonStyles from "@/constants/CommonStyles";
 const GroupCard = ({ item, onPress }) => (
   <Pressable style={styles.card} onPress={onPress}>
     <View style={styles.row}>
-      <Image
-        source={require("../../assets/images/hackthonImage.png")}
-        style={styles.profileImage}
-      />
+      <View style={styles.groupPlaceholder}>
+        <FontAwesome name="graduation-cap" size={20} color="#4e4cafff" />
+      </View>
       <View style={styles.dot2} />
       <View style={styles.content}>
         <Text style={styles.cardTitle}>{item.name}</Text>
@@ -328,6 +328,14 @@ const styles = StyleSheet.create({
     color: "#6B6B6B",
     fontSize: 20,
   },
+  groupPlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 20,
+    backgroundColor: "#ece8f5ff",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   dot2: {
     width: 10,
     height: 10,
@@ -335,7 +343,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#48d562",
     borderRadius: 10,
     position: "absolute",
-    top: 50,
+    top: 5,
     bottom: 2,
     right: 2,
   },

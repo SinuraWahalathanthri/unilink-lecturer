@@ -115,11 +115,7 @@ const LecturerProfile = () => {
             <Pressable
             >
               <Image
-                source={{
-                  uri:
-                    lecturerData.profileImg ||
-                    "https://static.vecteezy.com/system/resources/previews/006/606/249/large_2x/nice-stylish-girl-portrait-for-social-networks-user-avatar-vector.jpg",
-                }}
+                source={require("../../assets/images/image.png")}
                 style={styles.profileImage}
               />
             </Pressable>
@@ -146,26 +142,6 @@ const LecturerProfile = () => {
               ID: {lecturerData.lecturer_id || "N/A"}
             </Text>
           </View>
-
-          <Pressable
-            style={[
-              styles.statusToggleButton,
-              {
-                backgroundColor:
-                  lecturerData.status === "Active" ? "#ef4444" : "#10b981",
-              },
-            ]}
-            onPress={handleStatusToggle}
-          >
-            <MaterialIcons
-              name={lecturerData.status === "Active" ? "pause" : "play-arrow"}
-              size={18}
-              color="#fff"
-            />
-            <Text style={styles.statusToggleText}>
-              {lecturerData.status === "Active" ? "Deactivate" : "Activate"}
-            </Text>
-          </Pressable>
         </View>
 
         {/* Profile Details */}
@@ -281,6 +257,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
+    marginBottom:20
   },
   headerContainer: {
     alignItems: "center",

@@ -19,6 +19,7 @@ import {
   MaterialIcons,
   Ionicons,
   MaterialCommunityIcons,
+  FontAwesome,
 } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
@@ -127,7 +128,7 @@ const MessageItem = ({ message, isCurrentUser }) => {
       {!isCurrentUser && (
         <View style={styles.messageHeader}>
           <Image
-            source={require("../../assets/images/hackthonImage.png")}
+            source={require("../../assets/images/adminAvatar.png")}
             style={styles.messageAvatar}
           />
           <Text style={styles.senderName}>{message.user_name}</Text>
@@ -417,10 +418,9 @@ export default function GroupDetails() {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.groupInfo} onPress={showGroupInfo}>
-            <Image
-              source={require("../../assets/images/hackthonImage.png")}
-              style={styles.groupAvatar}
-            />
+            <View style={styles.groupPlaceholder}>
+              <FontAwesome name="graduation-cap" size={20} color="#4e4cafff" />
+            </View>
             <View style={styles.groupDetails}>
               <Text style={styles.groupName} numberOfLines={1}>
                 {name}
@@ -515,7 +515,7 @@ export default function GroupDetails() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#fff",
   },
   header: {
     flexDirection: "row",
@@ -525,17 +525,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#e5e5e5",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
   },
   backButton: {
     marginRight: 12,
@@ -550,6 +539,15 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 12,
+  },
+  groupPlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 20,
+    marginRight: 12,
+    backgroundColor: "#ece8f5ff",
+    justifyContent: "center",
+    alignItems: "center",
   },
   groupDetails: {
     flex: 1,
@@ -622,17 +620,8 @@ const styles = StyleSheet.create({
   otherUserBubble: {
     backgroundColor: "#fff",
     borderBottomLeftRadius: 4,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 1,
-      },
-    }),
+    borderWidth: 1,
+    borderColor: "#e5e5e5",
   },
   messageText: {
     fontSize: 15,

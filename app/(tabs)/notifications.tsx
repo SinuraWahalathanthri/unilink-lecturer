@@ -189,8 +189,10 @@ const Notifications = () => {
       const notificationsQuery = query(
         collection(db, "notifications"),
         where("lecturer_id", "==", currentUserId),
+        where("reciever_type", "==", "lecturer"),
         orderBy("timestamp", "desc")
       );
+
       const snapshot = await getDocs(notificationsQuery);
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,

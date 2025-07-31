@@ -39,7 +39,7 @@ export default function AppHeader({ type = "student" }) {
         />
 
         <Image
-          source={require("../assets/images/profileImage.png")}
+          source={require("../assets/images/image.png")}
           style={styles.profileImage}
         />
       </View>
