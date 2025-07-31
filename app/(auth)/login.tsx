@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,6 +24,7 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
   const { setUser } = useAuth();
@@ -33,6 +35,7 @@ const LoginScreen = () => {
       return;
     }
 
+    setLoading(true); // Start loading
     try {
       const q = query(collection(db, "lecturer"), where("email", "==", email));
       const snapshot = await getDocs(q);
@@ -84,6 +87,8 @@ const LoginScreen = () => {
     } catch (error) {
       console.error("Login error:", error);
       Alert.alert("Error", "Something went wrong during login.");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -102,7 +107,7 @@ const LoginScreen = () => {
           </Text>
 
           <Image
-            source={require("../../assets/images/student.png")}
+            source={require("../../assets/images/loginLectureImage.png")}
             style={styles.image}
           />
 
@@ -157,8 +162,16 @@ const LoginScreen = () => {
 
           {/* Login */}
           <View style={styles.loginSection}>
-            <Pressable style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Login</Text>
+            <Pressable
+              style={[styles.loginButton, loading && { opacity: 0.7 }]}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.loginButtonText}>Login</Text>
+              )}
             </Pressable>
           </View>
         </ScrollView>
@@ -241,7 +254,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loginSection: {
-    marginTop: 45,
+    marginTop: 40,
   },
   loginButton: {
     backgroundColor: "#3D83F5",
