@@ -35,7 +35,7 @@ const LoginScreen = () => {
       return;
     }
 
-    setLoading(true); // Start loading
+    setLoading(true);
     try {
       const q = query(collection(db, "lecturer"), where("email", "==", email));
       const snapshot = await getDocs(q);
@@ -88,7 +88,7 @@ const LoginScreen = () => {
       console.error("Login error:", error);
       Alert.alert("Error", "Something went wrong during login.");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false); 
     }
   };
 
@@ -254,7 +254,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loginSection: {
-    marginTop: 40,
+    marginTop: 30,
+    marginBottom:10
   },
   loginButton: {
     backgroundColor: "#3D83F5",

@@ -34,7 +34,6 @@ export const LoadingComponent: React.FC<LoadingComponentProps> = ({
   const rotateAnim = React.useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
-    // Pulse animation for the icon
     const pulseAnimation = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
@@ -51,8 +50,6 @@ export const LoadingComponent: React.FC<LoadingComponentProps> = ({
         }),
       ])
     );
-
-    // Rotation animation for additional visual appeal
     const rotateAnimation = Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
@@ -83,7 +80,6 @@ export const LoadingComponent: React.FC<LoadingComponentProps> = ({
   return (
     <View style={containerStyle}>
       <View style={styles.loadingContent}>
-        {/* Outer rotating ring */}
         <Animated.View
           style={[
             styles.outerRing,
@@ -125,7 +121,6 @@ export const LoadingComponent: React.FC<LoadingComponentProps> = ({
   );
 };
 
-// Individual animated dot component
 const LoadingDot: React.FC<{ delay: number; color: string }> = ({
   delay,
   color,
@@ -180,7 +175,6 @@ const LoadingDot: React.FC<{ delay: number; color: string }> = ({
   );
 };
 
-// Alternative minimal loading component
 export const MinimalLoader: React.FC<{
   color?: string;
   size?: number;
@@ -196,7 +190,6 @@ export const MinimalLoader: React.FC<{
   );
 };
 
-// Skeleton loader for chat messages
 export const ChatMessageSkeleton: React.FC = () => {
   const shimmerAnim = React.useRef(new Animated.Value(0)).current;
 

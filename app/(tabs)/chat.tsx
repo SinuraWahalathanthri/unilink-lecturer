@@ -34,7 +34,6 @@ import { db } from "@/services/FirebaseConfig";
 import { Image } from "expo-image";
 import AppHeader from "@/components/AppHeader";
 
-// Loading Components
 interface LoadingComponentProps {
   message?: string;
   size?: "small" | "large";
@@ -205,7 +204,6 @@ const LoadingDot: React.FC<{ delay: number; color: string }> = ({
   );
 };
 
-// Chat Card Skeleton Loader
 const ChatCardSkeleton: React.FC = () => {
   const shimmerAnim = React.useRef(new Animated.Value(0)).current;
 
@@ -280,7 +278,6 @@ const ChatCardSkeleton: React.FC = () => {
   );
 };
 
-// Multiple Chat Card Skeletons
 const ChatListSkeleton: React.FC = () => {
   return (
     <View style={{ flex: 1, paddingTop: 16 }}>
@@ -294,7 +291,6 @@ const ChatListSkeleton: React.FC = () => {
   );
 };
 
-// Empty State Component
 const EmptyState: React.FC<{ onStartChat: () => void; activeTab: string }> = ({
   onStartChat,
   activeTab,
@@ -325,7 +321,6 @@ const EmptyState: React.FC<{ onStartChat: () => void; activeTab: string }> = ({
   );
 };
 
-// Refreshing Indicator
 const RefreshIndicator: React.FC = () => {
   return (
     <View style={loadingStyles.refreshContainer}>
@@ -335,7 +330,6 @@ const RefreshIndicator: React.FC = () => {
   );
 };
 
-// Tab Component
 const TabButton: React.FC<{
   title: string;
   isActive: boolean;
@@ -413,7 +407,6 @@ const ChatCard = ({ item, onPress, type }) => (
   </Pressable>
 );
 
-// Admin Search Modal Component
 const AdminSearchModal: React.FC<{
   visible: boolean;
   onClose: () => void;
@@ -427,7 +420,7 @@ const AdminSearchModal: React.FC<{
   const fetchAdmins = async () => {
     setLoading(true);
     try {
-      const snapshot = await getDocs(collection(db, "admins")); // ✅ Changed from "users"
+      const snapshot = await getDocs(collection(db, "admins")); 
       const adminsList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -561,7 +554,6 @@ export default function ChatScreen() {
   const fetchStudentChats = async () => {
     if (!user?.email) return;
 
-    // Get lecturer doc ID using email
     const lecturerQuery = query(
       collection(db, "lecturers"),
       where("email", "==", user.email)
@@ -573,20 +565,17 @@ export default function ChatScreen() {
     const lecturerDoc = lecturerSnapshot.docs[0];
     const lecturerId = lecturerDoc.id;
 
-    // Fetch messages received by lecturer from students
     const receivedMessagesQuery = query(
       collection(db, "messages"),
       where("receiver_id", "==", lecturerId)
     );
     const receivedMessagesSnapshot = await getDocs(receivedMessagesQuery);
 
-    // Build threads object keyed by sender_id (students)
     const threads = {};
 
     for (let docSnap of receivedMessagesSnapshot.docs) {
       const data = docSnap.data();
 
-      // Only count if sender is NOT lecturer (i.e., student)
       if (data.sender_id === lecturerId) continue;
 
       const otherUser = data.sender_id;
@@ -613,7 +602,6 @@ export default function ChatScreen() {
 
       const studentData = studentDoc.data();
 
-      // Sort messages by createdAt descending
       const sortedMessages = threads[studentId].messages.sort(
         (a, b) => b.createdAt.seconds - a.createdAt.seconds
       );
@@ -641,7 +629,6 @@ export default function ChatScreen() {
   const fetchAdminChats = async () => {
     if (!user?.email) return;
 
-    // Get lecturer doc ID using email
     const lecturerQuery = query(
       collection(db, "lecturers"),
       where("email", "==", user.email)
@@ -653,7 +640,6 @@ export default function ChatScreen() {
     const lecturerDoc = lecturerSnapshot.docs[0];
     const lecturerId = lecturerDoc.id;
 
-    // Fetch messages received by lecturer from any sender
     const receivedMessagesQuery = query(
       collection(db, "messages"),
       where("receiver_id", "==", lecturerId)
@@ -665,7 +651,6 @@ export default function ChatScreen() {
     for (let docSnap of receivedMessagesSnapshot.docs) {
       const data = docSnap.data();
 
-      // Skip if sender is the lecturer themselves
       if (data.sender_id === lecturerId) continue;
 
       const otherUser = data.sender_id;
@@ -687,7 +672,6 @@ export default function ChatScreen() {
     const chatList = [];
 
     for (let adminId in threads) {
-      // Get admin document
       const adminDoc = await getDoc(doc(db, "admins", adminId));
       if (!adminDoc.exists()) continue;
 
@@ -731,7 +715,7 @@ export default function ChatScreen() {
 
   const navigateToStudentChat = (student) => {
     router.push({
-      pathname: "/screens/ChatScreen", // Your individual chat screen
+      pathname: "/screens/ChatScreen",
       params: {
         lecturer: JSON.stringify(user),
         studentEmail: student.email,
@@ -1009,7 +993,6 @@ const loadingStyles = StyleSheet.create({
     textAlign: "center",
     fontFamily: "Lato",
   },
-  // Skeleton styles
   skeletonAvatar: {
     width: 60,
     height: 60,
@@ -1021,7 +1004,6 @@ const loadingStyles = StyleSheet.create({
     backgroundColor: "#e0e0e0",
     borderRadius: 8,
   },
-  // Empty state styles
   emptyStateContainer: {
     flex: 1,
     justifyContent: "center",
@@ -1055,7 +1037,6 @@ const loadingStyles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 8,
   },
-  // Refresh indicator styles
   refreshContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -1072,7 +1053,6 @@ const loadingStyles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Lato",
   },
-  // Modal styles
   modalOverlay: {
     position: "absolute",
     top: 0,
@@ -1303,7 +1283,6 @@ const styles = StyleSheet.create({
     borderColor: "#3D83F5",
     borderWidth: 1,
   },
-  // Tab styles
   tabContainer: {
     flexDirection: "row",
     marginTop: 16,

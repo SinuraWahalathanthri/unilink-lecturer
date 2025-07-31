@@ -123,8 +123,3 @@ export const unregisterParticipant = async (eventId, studentId) => {
     const participantDocRef = doc(db, "event_participants", eventId, "participants", studentId);
     await deleteDoc(participantDocRef);
 };
-
-// export const getEvents = async () => {
-//   const querySnapshot = await getDocs(collection(db, "events"));
-//   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-// };

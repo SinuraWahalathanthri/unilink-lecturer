@@ -225,7 +225,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   activeTab: {
-    // backgroundColor: "#3D83F5",
     backgroundColor: "#ffffffff",
   },
   tabText: {
@@ -236,7 +235,6 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: "#3D83F5",
   },
-  //
   unreadBadge: {
     position: "absolute",
     top: -4,
@@ -362,8 +360,6 @@ const styles = StyleSheet.create({
     color: "#3A3A3A",
     fontSize: 13,
   },
-
-  ////////////
   container: {
     flex: 1,
     backgroundColor: "white",

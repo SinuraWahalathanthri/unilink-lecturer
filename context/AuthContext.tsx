@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-// Define the Lecturer type
 type Lecturer = {
   uid:string,
   name: string;
@@ -11,16 +10,13 @@ type Lecturer = {
   designation?: string;
 };
 
-// Update context type
 type AuthContextType = {
   user: Lecturer | null;
   setUser: (user: Lecturer | null) => void;
 };
 
-// Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Provider
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<Lecturer | null>(null);
 
@@ -31,7 +27,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Hook to use the context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

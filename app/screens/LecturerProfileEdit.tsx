@@ -150,7 +150,7 @@ const LecturerProfileEdit = () => {
         profileImg: lecturerData.profileImg || "",
       });
     }
-  }, []); // run once on mount
+  }, []); 
 
   const handleFocus = (field) => {
     setFocusedFields((prev) => ({ ...prev, [field]: true }));

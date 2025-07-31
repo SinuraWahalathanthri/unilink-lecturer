@@ -1,4 +1,3 @@
-// hooks/usePushNotifications.js
 import * as Notifications from "expo-notifications";
 import { useEffect } from "react";
 import { Platform } from "react-native";
@@ -30,7 +29,6 @@ export default function usePushNotifications(userEmail) {
                 });
             }
 
-            // Update lecturer's document with push token
             if (userEmail) {
                 const q = query(collection(db, "lecturers"), where("email", "==", userEmail));
                 const snapshot = await getDocs(q);

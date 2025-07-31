@@ -159,7 +159,6 @@ const Notifications = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
 
-  // Get lecturer ID from email
   useEffect(() => {
     if (user?.email) {
       const fetchLecturerId = async () => {

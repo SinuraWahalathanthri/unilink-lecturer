@@ -60,13 +60,11 @@ export const PushNotificationHandler = () => {
     registerForPushNotificationsAsync();
   }, [user]);
 
-  // Optional: handle incoming notification taps
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {
         const data = response.notification.request.content.data;
         console.log("User tapped notification with data:", data);
-        // Handle navigation if needed
       }
     );
 

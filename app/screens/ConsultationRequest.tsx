@@ -35,7 +35,6 @@ const ConsultationReqCard = ({ item, lecturerData }) => {
     item.sessionStatus || "not-started"
   );
 
-  // Helper function to get priority color
   const getPriorityColor = (priority) => {
     switch (priority?.toLowerCase()) {
       case "high":
@@ -49,7 +48,6 @@ const ConsultationReqCard = ({ item, lecturerData }) => {
     }
   };
 
-  // Helper function to get status color
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "pending":
@@ -69,7 +67,6 @@ const ConsultationReqCard = ({ item, lecturerData }) => {
     }
   };
 
-  // Helper function to get mode icon
   const getModeIcon = (mode) => {
     switch (mode?.toLowerCase()) {
       case "in-person":
@@ -81,7 +78,6 @@ const ConsultationReqCard = ({ item, lecturerData }) => {
     }
   };
 
-  // Helper function to format preferred dates array
   const formatPreferredDates = (dates) => {
     if (!dates || !Array.isArray(dates) || dates.length === 0) {
       return "Not specified";
@@ -89,7 +85,6 @@ const ConsultationReqCard = ({ item, lecturerData }) => {
     return dates.join(", ");
   };
 
-  // Check if consultation can be started/ended
   const canStartSession = () => {
     if (!item.scheduledDateTime || item.status !== "accepted") return false;
 
@@ -97,13 +92,11 @@ const ConsultationReqCard = ({ item, lecturerData }) => {
     const now = new Date();
 
     if (item.mode === "online") {
-      // For online: can start on the scheduled date
       return (
         now.toDateString() === scheduledTime.toDateString() &&
         sessionStatus === "not-started"
       );
     } else {
-      // For physical: can end 1 minute after scheduled time
       const oneMinuteAfter = new Date(scheduledTime.getTime() + 60000);
       return now >= oneMinuteAfter && sessionStatus === "not-started";
     }
@@ -125,7 +118,6 @@ const ConsultationReqCard = ({ item, lecturerData }) => {
       setSessionStatus("started");
 
       if (item.mode === "online" && lecturerData?.google_meet_link) {
-        // Open Google Meet link
         Linking.openURL(lecturerData.google_meet_link);
       }
     } catch (error) {
@@ -227,7 +219,6 @@ const ConsultationReqCard = ({ item, lecturerData }) => {
 
       return (
         <View style={{ marginTop: 10 }}>
-          {/* Session status indicator for active sessions */}
           {sessionStatus === "started" && (
             <View
               style={{
@@ -705,18 +696,15 @@ const ConsultationRequest = () => {
     return () => unsubscribe();
   }, [lecturerData]);
 
-  // Filter consultations based on status and search query
   useEffect(() => {
     let filtered = consultations;
 
-    // Filter by status
     if (selectedFilter !== "all") {
       filtered = filtered.filter(
         (consultation) => consultation.status === selectedFilter
       );
     }
 
-    // Filter by search query
     if (searchQuery.trim()) {
       filtered = filtered.filter(
         (consultation) =>

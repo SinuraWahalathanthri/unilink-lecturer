@@ -21,12 +21,11 @@ const eventData = [
     id: "1",
     title: "Hacktivate 2000",
     organizer: "Hackathon Club",
-    date: "2024-06-16", // Format: YYYY-MM-DD
+    date: "2024-06-16",
     time: "1PM - 3PM",
     location: "Memorial Hall 2 - 4",
-    image: require("../../assets/images/hackthonImage.png"), // Replace with your own images later
+    image: require("../../assets/images/hackthonImage.png"),
   },
-  // Add more events...
 ];
 
 const EventCard = ({ item }) => {

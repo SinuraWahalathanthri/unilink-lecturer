@@ -69,7 +69,6 @@ const ConsultationAccept = () => {
     });
   };
 
-  // Helper function to format preferred dates array
   const formatPreferredDates = (dates) => {
     if (!dates || !Array.isArray(dates) || dates.length === 0) {
       return "Not specified";
@@ -77,7 +76,6 @@ const ConsultationAccept = () => {
     return dates.join(", ");
   };
 
-  // Function to create notification for student
   const createNotificationForStudent = async (
     consultationId,
     studentId,
@@ -96,22 +94,21 @@ const ConsultationAccept = () => {
 
       const notificationData = {
         is_read: false,
-        student_id: studentId, // The receiver (student)
-        lecturer_id: consultationData.lecturer_id, // The sender (lecturer)
+        student_id: studentId, 
+        lecturer_id: consultationData.lecturer_id,
         message_description: "Your consultation request has been accepted",
         message_text: `Your consultation request has been accepted by ${lecturerName}. Scheduled for ${formattedDateTime}`,
         receiver_type: "student",
         related_id: consultationId,
         related_type: "consultations",
         timestamp: serverTimestamp(),
-        user_id: studentId, // For easier querying by student
+        user_id: studentId,
       };
 
       await addDoc(collection(db, "notifications"), notificationData);
       console.log("Notification sent to student successfully");
     } catch (error) {
       console.error("Error creating notification:", error);
-      // Don't throw error here to avoid disrupting the main flow
     }
   };
 
@@ -131,7 +128,6 @@ const ConsultationAccept = () => {
     try {
       const consultationRef = doc(db, "consultations", consultationData.id);
 
-      // Combine date and time into a single timestamp
       const scheduledDateTime = new Date(selectedDate);
       scheduledDateTime.setHours(selectedTime.getHours());
       scheduledDateTime.setMinutes(selectedTime.getMinutes());
@@ -148,11 +144,7 @@ const ConsultationAccept = () => {
         updateData.location = location;
       }
 
-      // Update the consultation
       await updateDoc(consultationRef, updateData);
-
-      // Create notification for the student
-      // You might need to get the lecturer's name from your lecturer data
       const lecturerName =
         consultationData.lecturerDetails?.name || "Your Lecturer";
       await createNotificationForStudent(

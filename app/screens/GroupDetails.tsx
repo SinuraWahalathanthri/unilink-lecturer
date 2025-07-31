@@ -169,7 +169,6 @@ export default function GroupDetails() {
   const [currentLecturerId, setCurrentLecturerId] = useState(null);
   const flatListRef = useRef(null);
 
-  // Get current lecturer ID
   const getCurrentLecturerId = useCallback(async () => {
     if (!user?.email) return null;
 
@@ -191,7 +190,6 @@ export default function GroupDetails() {
     return null;
   }, [user]);
 
-  // Fetch group information
   const fetchGroupInfo = useCallback(async () => {
     try {
       const groupDoc = await getDoc(doc(db, "communities", communityId));
@@ -203,7 +201,6 @@ export default function GroupDetails() {
     }
   }, [communityId]);
 
-  // Listen to messages
   useEffect(() => {
     const messagesRef = collection(db, "community_messages");
     const q = query(
@@ -224,13 +221,11 @@ export default function GroupDetails() {
     return () => unsubscribe();
   }, [communityId]);
 
-  // Fetch group info and lecturer ID on mount
   useEffect(() => {
     fetchGroupInfo();
     getCurrentLecturerId();
   }, [fetchGroupInfo, getCurrentLecturerId]);
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (messages.length > 0 && flatListRef.current) {
       setTimeout(() => {
@@ -270,7 +265,6 @@ export default function GroupDetails() {
     }
   };
 
-  // Cloudinary upload function
   const uploadFileToCloudinary = async (file, isImage = true) => {
     const formData = new FormData();
 
@@ -310,7 +304,6 @@ export default function GroupDetails() {
     }
   };
 
-  // Handle image upload
   const handleImageUpload = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -322,14 +315,12 @@ export default function GroupDetails() {
       setUploading(true);
 
       try {
-        // Resize + compress
         const compressed = await manipulateAsync(
           result.assets[0].uri,
           [{ resize: { width: 800 } }],
           { compress: 0.5, format: SaveFormat.JPEG }
         );
 
-        // Upload compressed image
         const uploadedUrl = await uploadFileToCloudinary(compressed, true);
         if (uploadedUrl) {
           await sendMessage({
@@ -347,7 +338,6 @@ export default function GroupDetails() {
     }
   };
 
-  // Handle PDF upload
   const handlePDFUpload = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -379,7 +369,6 @@ export default function GroupDetails() {
     }
   };
 
-  // Show attachment options
   const showAttachmentOptions = () => {
     Alert.alert("Send Attachment", "Choose what you want to send", [
       { text: "Image", onPress: handleImageUpload },

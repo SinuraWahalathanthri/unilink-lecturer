@@ -29,7 +29,6 @@ const LecturerProfile = () => {
   const { user: lecturerData, setUser } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  // If you want to sync lecturer status update with context and firestore
   const handleStatusToggle = async () => {
     if (!lecturerData) return;
 
@@ -47,11 +46,9 @@ const LecturerProfile = () => {
           onPress: async () => {
             try {
               setLoading(true);
-              // Assuming lecturerData.id is the Firestore document id
               const lecturerRef = doc(db, "lecturers", lecturerData.id);
               await updateDoc(lecturerRef, { status: newStatus });
 
-              // Update context with new status
               setUser({ ...lecturerData, status: newStatus });
 
               Alert.alert(
@@ -266,7 +263,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8FAFC",
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
-    marginTop:Platform.OS === "android" ? 25 : 0, // Adjust for Android status bar
+    marginTop:Platform.OS === "android" ? 25 : 0, 
   },
   profileImageContainer: {
     position: "relative",

@@ -66,7 +66,6 @@ const HomeScreen = () => {
           user.lecturer_id
         );
 
-        // Step 1: Get lecturer Firestore document ID
         const lecturerQuery = query(
           collection(db, "lecturers"),
           where("lecturer_id", "==", user.lecturer_id)
@@ -81,7 +80,6 @@ const HomeScreen = () => {
         const lecturerDocId = lecturerSnap.docs[0].id;
         console.log("Lecturer Firestore doc ID:", lecturerDocId);
 
-        // Step 2: Fetch consultations for this lecturer doc ID
         const consultationsQuery = query(
           collection(db, "consultations"),
           where("lecturer_id", "==", lecturerDocId),
@@ -180,52 +178,6 @@ const HomeScreen = () => {
             <Events />
           </View> */}
 
-          {/* Quick Access */}
-          <View style={[styles.sectionHeader]}>
-            <Text style={styles.sectionTitle}>Quick Access</Text>
-          </View>
-          <View style={styles.quickAccessContainer}>
-            <View style={styles.quickAccessRow}>
-              <Pressable style={styles.quickAccessCard}>
-                <View style={styles.quickAccessTop}>
-                  <View
-                    style={[
-                      styles.iconContainer,
-                      { backgroundColor: "#3D83F5" },
-                    ]}
-                  >
-                    <MaterialIcons
-                      name="chat-bubble-outline"
-                      size={20}
-                      color="#ffffff"
-                    />
-                  </View>
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>2</Text>
-                  </View>
-                </View>
-                <Text style={styles.quickAccessText}>Chat with Students</Text>
-              </Pressable>
-              <Pressable style={styles.quickAccessCard}>
-                <View style={styles.quickAccessTop}>
-                  <View
-                    style={[
-                      styles.iconContainer,
-                      { backgroundColor: "#F87216" },
-                    ]}
-                  >
-                    <MaterialIcons
-                      name="info-outline"
-                      size={20}
-                      color="#ffffff"
-                    />
-                  </View>
-                </View>
-                <Text style={styles.quickAccessText}>Get Help</Text>
-              </Pressable>
-            </View>
-          </View>
-
           {/* Recent Consultation Requests */}
           <View style={styles.consultationHeader}>
             <Text style={styles.consultationTitle}>
@@ -233,10 +185,9 @@ const HomeScreen = () => {
             </Text>
             <Pressable
               onPress={() => {
-                // Use the user data instead of lecturerData
                 router.push({
                   pathname: "/screens/ConsultationRequest",
-                  params: { lecturer: JSON.stringify(user) }, // Pass user instead of lecturerData
+                  params: { lecturer: JSON.stringify(user) }, 
                 });
               }}
             >
@@ -304,12 +255,11 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#0F4996", // Blue background for safe area
+    backgroundColor: "#0F4996",
   },
 
-  // Blue Header Section
   blueHeaderSection: {
-    backgroundColor: "#0F4996", // Blue background
+    backgroundColor: "#0F4996",
     paddingBottom: 24,
   },
   headerContainer: {
@@ -333,13 +283,12 @@ const styles = StyleSheet.create({
     color: "#B3C6E7",
   },
 
-  // White Content Section
   whiteContentSection: {
     flex: 1,
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    marginTop: -12, // Slight overlap for smooth transition
+    marginTop: -12, 
     paddingTop: 24,
   },
   scrollContent: {
@@ -347,7 +296,6 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === "ios" ? 80 : 40,
   },
 
-  // Section Headers
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -367,12 +315,10 @@ const styles = StyleSheet.create({
     color: "#1A3C7C",
   },
 
-  // Events
   eventsContainer: {
     marginBottom: 8,
   },
 
-  // Quick Access
   quickAccessContainer: {
     marginTop: 8,
   },
@@ -425,13 +371,10 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 
-  // Consultation
   consultationContainer: {
     marginTop: 16,
     gap: 10,
   },
-
-  // Event Card Styles (unchanged)
   card: {
     width: 200,
     height: 246,
@@ -491,7 +434,6 @@ const styles = StyleSheet.create({
     fontFamily: "Lato",
   },
 
-  // Lecture Card Styles (unchanged)
   lectureCard: {
     width: 195,
     height: 198,
@@ -530,7 +472,6 @@ const styles = StyleSheet.create({
   consultationHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 24,
     alignItems: "center",
   },
   consultationTitle: {

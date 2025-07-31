@@ -99,15 +99,12 @@ export default function ChatScreen() {
   console.log("otherUserId:", otherUserId);
   console.log("chatType:", chatType);
 
-  // Fetch the other user's ID based on chat type
   useEffect(() => {
     const fetchOtherUserId = async () => {
       try {
         if (isAdminChat && adminId) {
-          // Admin chat - use the provided adminId
           setOtherUserId(adminId);
         } else if (!isAdminChat && studentEmail) {
-          // Student chat - fetch student ID by email
           const q = query(
             collection(db, "students"),
             where("email", "==", studentEmail)
@@ -127,7 +124,6 @@ export default function ChatScreen() {
     fetchOtherUserId();
   }, [studentEmail, adminEmail, adminId, isAdminChat]);
 
-  // Fetch other user's details
   useEffect(() => {
     const fetchOtherUserDetails = async () => {
       if (!otherUserId) return;
@@ -154,7 +150,6 @@ export default function ChatScreen() {
     fetchOtherUserDetails();
   }, [otherUserId, isAdminChat]);
 
-  // Fetch lecturer document ID
   useEffect(() => {
     const fetchLecturerDocId = async () => {
       try {
@@ -176,7 +171,6 @@ export default function ChatScreen() {
     fetchLecturerDocId();
   }, []);
 
-  // Listen to messages
   useEffect(() => {
     if (!lecturerDocId || !otherUserId) return;
 
@@ -200,12 +194,10 @@ export default function ChatScreen() {
         ...doc.data(),
       })) as Message[];
       setMessages((prev) => {
-        // Merge unique messages from q1
         const newMessages = [
           ...prev.filter((m) => !data1.some((d) => d.id === m.id)),
           ...data1,
         ];
-        // Sort combined messages by createdAt
         return newMessages.sort((a, b) => {
           if (!a.createdAt || !b.createdAt) return 0;
           return a.createdAt.seconds - b.createdAt.seconds;
@@ -294,14 +286,12 @@ export default function ChatScreen() {
     if (!result.canceled) {
       setLoading(true);
 
-      // ✅ Resize + compress
       const compressed = await ImageManipulator.manipulateAsync(
         result.assets[0].uri,
         [{ resize: { width: 800 } }],
         { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
       );
 
-      // Upload compressed image
       const uploadedUrl = await uploadFileToCloudinary(compressed, true);
       if (uploadedUrl) setImageUrl(uploadedUrl);
       setLoading(false);
@@ -344,7 +334,6 @@ export default function ChatScreen() {
     }
   };
 
-  // Mark messages as read
   useEffect(() => {
     const markMessagesAsRead = async () => {
       if (!lecturerDocId || !otherUserId) return;
@@ -382,7 +371,6 @@ export default function ChatScreen() {
     setIsImagePreviewVisible(true);
   };
 
-  // Update header based on chat type
   useLayoutEffect(() => {
     if (!otherUserData) return;
 
@@ -661,7 +649,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // Admin avatar style
   adminAvatar: {
     width: 40,
     height: 40,
@@ -762,7 +749,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fafafa",
   },
 
-  // Delete Modal Styles
   deleteModalContainer: {
     flex: 1,
     justifyContent: "center",

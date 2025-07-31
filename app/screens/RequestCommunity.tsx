@@ -26,13 +26,11 @@ const RequestCommunity = () => {
   const router = useRouter();
   const lecturerData = lecturer ? JSON.parse(lecturer) : null;
 
-  // Community details
   const [communityName, setCommunityName] = useState("");
   const [description, setDescription] = useState("");
   const [communityType, setCommunityType] = useState("Academic");
   const [justification, setJustification] = useState("");
 
-  // UI states
   const [loading, setLoading] = useState(false);
   const [focusedFields, setFocusedFields] = useState({});
 
@@ -73,9 +71,8 @@ const RequestCommunity = () => {
 
     setLoading(true);
     try {
-      // 🔍 Get lecturer document ID using their email
       const q = query(
-        collection(db, "lecturers"), // 👈 use your actual collection name
+        collection(db, "lecturers"),
         where("email", "==", lecturerData.email)
       );
 
@@ -109,7 +106,7 @@ Please review and create this community if approved.
     `.trim();
 
       const messageData = {
-        senderId: lecturerId, // ✅ Now using correct ID
+        senderId: lecturerId,
         senderName: lecturerData.name,
         senderEmail: lecturerData.email,
         senderType: "lecturer",
