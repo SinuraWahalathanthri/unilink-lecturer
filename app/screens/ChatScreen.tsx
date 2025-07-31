@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -54,6 +54,7 @@ const PDF_UPLOAD_PRESET = "unilink-docs";
 
 export default function ChatScreen() {
   const navigation = useNavigation();
+  const scrollViewRef = useRef<ScrollView>(null);
   const {
     lecturer,
     studentEmail,
@@ -94,6 +95,8 @@ export default function ChatScreen() {
     institutional_id?: string;
     role?: string;
   } | null>(null);
+
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   console.log("lecturerDocId:", lecturerDocId);
   console.log("otherUserId:", otherUserId);
@@ -170,6 +173,19 @@ export default function ChatScreen() {
 
     fetchLecturerDocId();
   }, []);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      // Delay the scroll to ensure the content has rendered
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: !isInitialLoad });
+        if (isInitialLoad) {
+          setIsInitialLoad(false);
+        }
+      }, 100);
+    }
+  }, [messages]);
 
   useEffect(() => {
     if (!lecturerDocId || !otherUserId) return;
@@ -440,9 +456,6 @@ export default function ChatScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          headerTitle: "",
-          headerTitleAlign: "left",
-          headerBackTitle: " ",
         }}
       />
 
@@ -452,9 +465,14 @@ export default function ChatScreen() {
         resizeMode="cover"
       >
         <ScrollView
+          ref={scrollViewRef}
           style={{ flex: 1, padding: 16, marginBottom: 5, paddingVertical: 10 }}
           showsVerticalScrollIndicator={false}
-          snapToEnd
+          contentContainerStyle={{ paddingBottom: 20 }}
+          onContentSizeChange={() => {
+            // Auto scroll to bottom when content size changes
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }}
         >
           {messages.map((msg) => {
             const isLecturer = msg.sender_id === lecturerDocId;
@@ -624,7 +642,6 @@ export default function ChatScreen() {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   timeText: {
     fontSize: 10,
