@@ -112,7 +112,7 @@ const LoginScreen = () => {
           />
 
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>University Email or Student ID</Text>
+            <Text style={styles.label}>University Email or Lecuturer ID</Text>
             <View
               style={[
                 styles.emailInputWrapper,
